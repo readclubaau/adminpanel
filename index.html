@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الآدمن - نادي اقرأ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- الأساسيات --- */
+        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
+        body { background-color: #fcf8ec; color: #5d4037; height: 100vh; overflow: hidden; }
+        
+        /* --- شاشة تسجيل الدخول --- */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #2d1b00, #1a1a1a);
+            display: flex; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .login-box {
+            background: #fcf8ec; padding: 40px; border-radius: 20px;
+            width: 90%; max-width: 400px; text-align: center;
+            border: 4px solid #cfaa56; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .login-title { color: #a17506; font-weight: 900; margin-bottom: 20px; font-size: 1.5rem; }
+        .form-input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 1px solid #cfaa56; border-radius: 8px; outline: none;
+        }
+        .login-btn {
+            width: 100%; padding: 12px; background: #a17506; color: white;
+            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .login-btn:hover { background: #8a6305; }
+        .error-msg { color: red; font-size: 0.8rem; display: none; margin-bottom: 10px; }
+
+        /* --- لوحة التحكم (Dashboard) --- */
+        #dashboard { display: none; height: 100%; display: flex; } 
+        
+        /* القائمة الجانبية */
+        .sidebar {
+            width: 250px; background: #2d1b00; color: #fcf8ec;
+            display: flex; flex-direction: column; padding: 20px;
+        }
+        .admin-logo {
+            font-size: 1.5rem; font-weight: 900; color: #cfaa56;
+            text-align: center; margin-bottom: 40px; border-bottom: 1px solid #444; padding-bottom: 20px;
+        }
+        .menu-item {
+            padding: 15px; cursor: pointer; border-radius: 10px; margin-bottom: 10px;
+            transition: 0.3s; font-weight: 600;
+        }
+        .menu-item:hover, .menu-item.active { background: #cfaa56; color: #2d1b00; }
+        .logout-btn { margin-top: auto; background: #d32f2f; color: white; text-align: center; }
+
+        /* المحتوى الرئيسي */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .section-title { font-size: 2rem; color: #a17506; margin-bottom: 30px; font-weight: 900; }
+        
+        /* الجداول */
+        .table-container { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 15px; text-align: right; border-bottom: 1px solid #eee; white-space: nowrap; vertical-align: middle; }
+        .data-table th { background: #f7f1e1; color: #a17506; font-weight: 800; }
+        
+        /* أزرار الإجراءات */
+        .add-book-btn {
+            background: #a17506; color: white; padding: 10px 20px; 
+            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; display: inline-block;
+        }
+        .action-btn { padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; margin-left: 5px; color: white; }
+        .btn-edit { background: #2196F3; }
+        .btn-delete { background: #d32f2f; }
+
+        /* الأقسام */
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid #a17506; border-radius: 50%;
+            width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Modal إضافة/تعديل كتاب */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 3000;
+        }
+        .modal-content {
+            background: #fff; padding: 30px; border-radius: 15px; width: 400px;
+            border: 2px solid #cfaa56; position: relative; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header { font-weight: bold; font-size: 1.2rem; color: #a17506; margin-bottom: 20px; }
+        .modal-footer { margin-top: 20px; display: flex; gap: 10px; }
+        .cancel-btn { background: #ccc; color: #333; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="login-title">دخول المسؤولين 🔒</div>
+            <p class="error-msg" id="login-error">اسم المستخدم أو كلمة المرور غير صحيحة</p>
+            <input type="text" id="username" class="form-input" placeholder="اسم المستخدم">
+            <input type="password" id="password" class="form-input" placeholder="كلمة المرور">
+            <button class="login-btn" onclick="checkLogin()">دخول</button>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        
+        <div class="sidebar">
+            <div class="admin-logo">نادي اقرأ Admin</div>
+            <div class="menu-item active" onclick="showSection('orders')">📦 إدارة الطلبات</div>
+            <div class="menu-item" onclick="showSection('books')">📚 كتب البيع</div>
+            <div class="menu-item" onclick="showSection('borrow')">🤝 كتب الاستعارة</div>
+            <div class="menu-item" onclick="showSection('share')">📢 إدارة المشاركات</div>
+            <div class="menu-item logout-btn" onclick="logout()">تسجيل خروج</div>
+        </div>
+
+        <div class="main-content">
+            
+            <div id="orders-section" class="content-section active">
+                <h2 class="section-title">الطلبات الواردة</h2>
+                <div class="loader" id="orders-loader"></div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الاسم</th>
+                                <th>رقم الهاتف</th>
+                                <th>الرقم الجامعي</th>
+                                <th>الكتب المطلوبة</th>
+                                <th>الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="books-section" class="content-section">
+                <h2 class="section-title">إدارة كتب البيع</h2>
+                <button class="add-book-btn" onclick="openAddBookModal('sale')">+ إضافة كتاب للبيع</button>
+                <div class="loader" id="books-loader"></div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>صورة</th>
+                                <th>العنوان</th>
+                                <th>السعر</th>
+                                <th>التصنيف</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="books-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="borrow-section" class="content-section">
+                <h2 class="section-title">إدارة كتب الاستعارة</h2>
+                <button class="add-book-btn" onclick="openAddBookModal('borrow')">+ إضافة كتاب للاستعارة</button>
+                <div class="loader" id="borrow-loader"></div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>صورة</th>
+                                <th>العنوان</th>
+                                <th>التصنيف</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="borrow-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="share-section" class="content-section">
+                <h2 class="section-title">إدارة المشاركات</h2>
+                <div class="loader" id="share-loader"></div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>الصورة</th>
+                                <th>العنوان</th>
+                                <th>الوصف</th>
+                                <th>رقم الهاتف</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="share-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="book-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modal-title">بيانات الكتاب</div>
+            
+            <input type="hidden" id="edit-row-number">
+            <input type="hidden" id="current-mode"> 
+            
+            <input type="text" id="book-title" class="form-input" placeholder="عنوان الكتاب / الملحق">
+            
+            <div id="price-container">
+                <input type="text" id="book-price" class="form-input" placeholder="السعر (مثال: 5.00 JD)">
+            </div>
+            
+            <div id="desc-container">
+                <textarea id="book-desc" class="form-input" placeholder="وصف الكتاب (اختياري)" rows="3"></textarea>
+            </div>
+
+            <div id="category-container">
+                <select id="book-category" class="form-input" style="height: 45px;">
+                    <option value="" disabled selected>اختر التصنيف</option>
+                    <option value="novels">الروايات والأدب</option>
+                    <option value="self-dev">التنمية البشرية</option>
+                    <option value="history">التاريخ والحضارة</option>
+                    <option value="kids">ركن الطفل</option>
+                    <option value="science">العلوم والمعرفة</option>
+                    <option value="psychology">علم النفس</option>
+                    <option value="philosophy">فلسفة</option>
+                    <option value="spirituality">روحانيات</option>
+                    <option value="short-stories">قصص قصيرة</option>
+                    <option value="biography">سيرة ذاتية</option>
+                    <option value="poetry">شعر</option>
+                </select>
+            </div>
+
+            <div id="phone-container" style="display:none;">
+                <input type="text" id="book-phone" class="form-input" placeholder="رقم الهاتف (07xxxxxxxx)">
+            </div>
+
+            <input type="text" id="book-image" class="form-input" placeholder="رابط الصورة (URL) أو Base64">
+            
+            <div class="modal-footer">
+                <button class="login-btn" id="save-book-btn" onclick="saveBook()">حفظ</button>
+                <button class="login-btn cancel-btn" onclick="closeBookModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyzvblADYZulGcKQUn4J5HVRGr7w42KLB2PD6yS-Vi_JXbEcu419P7AECzIFtoON_X7cQ/exec';
+
+        const admins = {
+            "laitharabiat": "Id6.Pure+",
+            "Yara": "read.club"
+        };
+
+        let isEditing = false;
+
+        // --- تسجيل الدخول ---
+        function checkLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorMsg = document.getElementById('login-error');
+
+            if (admins[user] && admins[user] === pass) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'flex';
+                fetchOrders();
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        function logout() { location.reload(); }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId + '-section').classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            if (sectionId === 'books') fetchBooks('books');
+            else if (sectionId === 'borrow') fetchBooks('borrow');
+            else if (sectionId === 'share') fetchShareBooks();
+            else if (sectionId === 'orders') fetchOrders();
+        }
+
+        // --- جلب البيانات ---
+        function fetchOrders() {
+            const loader = document.getElementById('orders-loader');
+            const tbody = document.getElementById('orders-table-body');
+            loader.style.display = 'block'; tbody.innerHTML = '';
+
+            fetch(scriptURL + "?action=getOrders")
+            .then(response => response.json())
+            .then(data => {
+                loader.style.display = 'none';
+                if (!data || data.length <= 1) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">لا توجد طلبات حتى الآن</td></tr>';
+                    return;
+                }
+                const rows = data.slice(1).reverse();
+                rows.forEach(row => {
+                    const date = new Date(row[0]).toLocaleDateString('ar-JO');
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${date}</td>
+                        <td>${row[1]}</td>
+                        <td style="direction:ltr; text-align:right">${row[2]}</td>
+                        <td>${row[3]}</td>
+                        <td>${row[4]}</td>
+                        <td style="color:#a17506; font-weight:bold">${row[5]}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        function fetchBooks(type) {
+            const action = type === 'books' ? 'getBooks' : 'getBorrowBooks';
+            const loader = document.getElementById(type === 'books' ? 'books-loader' : 'borrow-loader');
+            const tbody = document.getElementById(type === 'books' ? 'books-table-body' : 'borrow-table-body');
+            
+            loader.style.display = 'block';
+            tbody.innerHTML = '';
+
+            fetch(scriptURL + "?action=" + action)
+            .then(response => response.json())
+            .then(data => {
+                loader.style.display = 'none';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">المكتبة فارغة</td></tr>';
+                    return;
+                }
+
+                data.forEach(book => {
+                    const tr = document.createElement('tr');
+                    
+                    // استخدام التشفير لتجنب المشاكل في الزر
+                    const bookData = encodeURIComponent(JSON.stringify(book));
+                    
+                    const priceCell = type === 'books' ? `<td>${book.price}</td>` : '';
+                    
+                    tr.innerHTML = `
+                        <td><img src="${book.image}" width="40" height="60" style="object-fit:cover; border-radius:4px;"></td>
+                        <td>${book.title}</td>
+                        ${priceCell}
+                        <td>${book.category}</td>
+                        <td>
+                            <button class="action-btn btn-edit" onclick="openEditBookModal('${bookData}', '${type}')">تعديل</button>
+                            <button class="action-btn btn-delete" onclick="deleteBook(${book.rowNumber}, '${type}')">حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        function fetchShareBooks() {
+            const loader = document.getElementById('share-loader');
+            const tbody = document.getElementById('share-table-body');
+            
+            loader.style.display = 'block';
+            tbody.innerHTML = '';
+
+            fetch(scriptURL + "?action=getShareBooks")
+            .then(response => response.json())
+            .then(data => {
+                loader.style.display = 'none';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">لا توجد مشاركات</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    // استخدام التشفير لتجنب المشاكل
+                    const itemData = encodeURIComponent(JSON.stringify(item));
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><img src="${item.image}" width="40" height="60" style="object-fit:cover; border-radius:4px;"></td>
+                        <td>${item.title}</td>
+                        <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.description}</td>
+                        <td style="direction:ltr;">${item.phone}</td>
+                        <td>
+                            <button class="action-btn btn-edit" onclick="openEditBookModal('${itemData}', 'share')">تعديل</button>
+                            <button class="action-btn btn-delete" onclick="deleteBook(${item.rowNumber}, 'share')">حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        // --- إدارة النوافذ (Modal) ---
+        function openAddBookModal(mode) {
+            isEditing = false;
+            document.getElementById('current-mode').value = mode;
+            document.getElementById('modal-title').innerText = mode === 'sale' ? "إضافة كتاب للبيع" : "إضافة كتاب للاستعارة";
+            
+            // التحكم في الحقول
+            document.getElementById('price-container').style.display = mode === 'sale' ? 'block' : 'none';
+            document.getElementById('desc-container').style.display = mode === 'sale' ? 'block' : 'none';
+            document.getElementById('category-container').style.display = 'block';
+            document.getElementById('phone-container').style.display = 'none';
+
+            // تصفير الحقول
+            document.getElementById('book-title').value = '';
+            document.getElementById('book-price').value = '';
+            document.getElementById('book-category').value = '';
+            document.getElementById('book-desc').value = '';
+            document.getElementById('book-image').value = '';
+            document.getElementById('edit-row-number').value = '';
+            
+            document.getElementById('book-modal').style.display = 'flex';
+        }
+
+        function openEditBookModal(bookDataStr, type) {
+            isEditing = true;
+            
+            // فك التشفير هنا
+            const book = JSON.parse(decodeURIComponent(bookDataStr));
+            
+            const mode = type === 'books' ? 'sale' : (type === 'borrow' ? 'borrow' : 'share');
+            
+            document.getElementById('current-mode').value = mode;
+            document.getElementById('modal-title').innerText = "تعديل البيانات";
+            document.getElementById('edit-row-number').value = book.rowNumber;
+            
+            document.getElementById('book-title').value = book.title;
+            document.getElementById('book-image').value = book.image;
+
+            if(mode === 'sale') {
+                document.getElementById('price-container').style.display = 'block';
+                document.getElementById('book-price').value = book.price;
+                document.getElementById('desc-container').style.display = 'block';
+                document.getElementById('book-desc').value = book.description || '';
+                document.getElementById('category-container').style.display = 'block';
+                document.getElementById('book-category').value = book.category;
+                document.getElementById('phone-container').style.display = 'none';
+            } else if (mode === 'borrow') {
+                document.getElementById('price-container').style.display = 'none';
+                document.getElementById('desc-container').style.display = 'none';
+                document.getElementById('category-container').style.display = 'block';
+                document.getElementById('book-category').value = book.category;
+                document.getElementById('phone-container').style.display = 'none';
+            } else if (mode === 'share') {
+                document.getElementById('price-container').style.display = 'none';
+                document.getElementById('category-container').style.display = 'none';
+                document.getElementById('desc-container').style.display = 'block';
+                document.getElementById('book-desc').value = book.description || '';
+                document.getElementById('phone-container').style.display = 'block';
+                document.getElementById('book-phone').value = book.phone;
+            }
+            
+            document.getElementById('book-modal').style.display = 'flex';
+        }
+
+        function closeBookModal() {
+            document.getElementById('book-modal').style.display = 'none';
+        }
+
+        // --- حفظ البيانات ---
+        function saveBook() {
+            const mode = document.getElementById('current-mode').value;
+            const btn = document.getElementById('save-book-btn');
+            const rowNumber = document.getElementById('edit-row-number').value;
+
+            let action = '';
+            if(mode === 'sale') action = isEditing ? 'editBook' : 'addBook';
+            else if(mode === 'borrow') action = isEditing ? 'editBorrowBook' : 'addBorrowBook';
+            else if(mode === 'share') action = 'editShareBook';
+
+            const formData = {
+                action: action,
+                rowNumber: rowNumber,
+                title: document.getElementById('book-title').value,
+                image: document.getElementById('book-image').value
+            };
+
+            // إضافة الحقول الخاصة
+            if(mode === 'sale') {
+                formData.price = document.getElementById('book-price').value;
+                formData.category = document.getElementById('book-category').value;
+                formData.description = document.getElementById('book-desc').value;
+            } else if (mode === 'borrow') {
+                formData.category = document.getElementById('book-category').value;
+            } else if (mode === 'share') {
+                formData.description = document.getElementById('book-desc').value;
+                formData.phone = document.getElementById('book-phone').value;
+            }
+
+            btn.innerText = "جاري الحفظ...";
+            btn.disabled = true;
+
+            fetch(scriptURL, {
+                method: 'POST',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.text())
+            .then(text => {
+                alert("تمت العملية بنجاح");
+                closeBookModal();
+                // تحديث الجدول المناسب
+                if(mode === 'share') fetchShareBooks();
+                else fetchBooks(mode === 'sale' ? 'books' : 'borrow');
+            })
+            .catch(err => {
+                alert("حدث خطأ!");
+                console.error(err);
+            })
+            .finally(() => {
+                btn.innerText = "حفظ";
+                btn.disabled = false;
+            });
+        }
+
+        function deleteBook(rowNumber, type) {
+            if(confirm("هل أنت متأكد من الحذف؟")) {
+                let action = '';
+                if(type === 'books') action = 'deleteBook';
+                else if(type === 'borrow') action = 'deleteBorrowBook';
+                else if(type === 'share') action = 'deleteShareBook';
+
+                fetch(scriptURL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({action: action, rowNumber: rowNumber})
+                })
+                .then(res => res.text())
+                .then(text => {
+                    alert("تم الحذف بنجاح");
+                    if(type === 'share') fetchShareBooks();
+                    else fetchBooks(type);
+                });
+            }
+        }
+
+    </script>
+</body>
+</html>
