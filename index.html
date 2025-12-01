@@ -2,13 +2,13 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>لوحة تحكم الآدمن - نادي اقرأ</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         /* --- الأساسيات --- */
-        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
-        body { background-color: #fcf8ec; color: #5d4037; height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #fcf8ec; color: #5d4037; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         /* --- شاشة تسجيل الدخول --- */
         #login-screen {
@@ -17,174 +17,187 @@
             display: flex; justify-content: center; align-items: center; z-index: 2000;
         }
         .login-box {
-            background: #fcf8ec; padding: 40px; border-radius: 20px;
-            width: 90%; max-width: 400px; text-align: center;
+            background: #fcf8ec; padding: 30px; border-radius: 20px;
+            width: 85%; max-width: 400px; text-align: center;
             border: 4px solid #cfaa56; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .login-title { color: #a17506; font-weight: 900; margin-bottom: 20px; font-size: 1.5rem; }
+        .login-title { color: #a17506; font-weight: 900; margin-bottom: 20px; font-size: 1.4rem; }
         .form-input {
             width: 100%; padding: 12px; margin-bottom: 15px;
-            border: 1px solid #cfaa56; border-radius: 8px; outline: none; font-size: 16px; /* حجم خط مناسب للموبايل */
+            border: 1px solid #cfaa56; border-radius: 8px; outline: none; font-size: 16px;
         }
         .login-btn {
             width: 100%; padding: 12px; background: #a17506; color: white;
             border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px;
         }
-        .login-btn:hover { background: #8a6305; }
         .error-msg { color: red; font-size: 0.8rem; display: none; margin-bottom: 10px; }
 
         /* --- لوحة التحكم (Dashboard) --- */
-        #dashboard { display: none; height: 100%; display: flex; } 
+        #dashboard { flex: 1; display: none; height: 100%; overflow: hidden; } 
         
-        /* القائمة الجانبية (Sidebar) */
+        /* القائمة الجانبية (Sidebar / Topbar) */
         .sidebar {
             width: 250px; background: #2d1b00; color: #fcf8ec;
             display: flex; flex-direction: column; padding: 20px;
-            flex-shrink: 0;
+            flex-shrink: 0; z-index: 100;
         }
         .admin-logo {
             font-size: 1.5rem; font-weight: 900; color: #cfaa56;
-            text-align: center; margin-bottom: 40px; border-bottom: 1px solid #444; padding-bottom: 20px;
+            text-align: center; margin-bottom: 30px; border-bottom: 1px solid #444; padding-bottom: 20px;
         }
         .menu-item {
-            padding: 15px; cursor: pointer; border-radius: 10px; margin-bottom: 10px;
-            transition: 0.3s; font-weight: 600; white-space: nowrap;
+            padding: 12px 15px; cursor: pointer; border-radius: 10px; margin-bottom: 10px;
+            transition: 0.3s; font-weight: 600; white-space: nowrap; font-size: 1rem;
+            display: flex; align-items: center; gap: 10px;
         }
         .menu-item:hover, .menu-item.active { background: #cfaa56; color: #2d1b00; }
-        .logout-btn { margin-top: auto; background: #d32f2f; color: white; text-align: center; }
+        .logout-btn { margin-top: auto; background: #d32f2f; color: white; justify-content: center; }
 
         /* المحتوى الرئيسي */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; background-color: #fcf8ec; }
-        .section-title { font-size: 2rem; color: #a17506; margin-bottom: 30px; font-weight: 900; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; background-color: #fcf8ec; position: relative; }
+        .section-title { font-size: 1.8rem; color: #a17506; margin-bottom: 25px; font-weight: 900; }
         
-        /* الجداول (تنسيق سطح المكتب الافتراضي) */
+        /* الجداول (سطح المكتب) */
         .table-container { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th, .data-table td { padding: 15px; text-align: right; border-bottom: 1px solid #eee; white-space: nowrap; vertical-align: middle; }
+        .data-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .data-table th, .data-table td { padding: 15px; text-align: right; border-bottom: 1px solid #eee; vertical-align: middle; }
         .data-table th { background: #f7f1e1; color: #a17506; font-weight: 800; }
         
         /* أزرار الإجراءات */
         .add-book-btn {
-            background: #a17506; color: white; padding: 10px 20px; 
-            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; display: inline-block;
+            background: #a17506; color: white; padding: 12px 25px; 
+            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; 
+            display: inline-block; font-size: 1rem; box-shadow: 0 4px 6px rgba(161, 117, 6, 0.2);
         }
-        .action-btn { padding: 8px 12px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.9rem; margin-left: 5px; color: white; }
+        .action-btn { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.85rem; margin-left: 5px; color: white; }
         .btn-edit { background: #2196F3; }
         .btn-delete { background: #d32f2f; }
 
         /* الأقسام */
         .content-section { display: none; }
-        .content-section.active { display: block; }
+        .content-section.active { display: block; padding-bottom: 50px; }
 
         /* Loading Spinner */
         .loader {
             border: 4px solid #f3f3f3; border-top: 4px solid #a17506; border-radius: 50%;
-            width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none;
+            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 30px auto; display: none;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Modal إضافة/تعديل كتاب */
+        /* Modal */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 3000;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 3000;
+            backdrop-filter: blur(5px);
         }
         .modal-content {
-            background: #fff; padding: 25px; border-radius: 15px; width: 400px;
+            background: #fff; padding: 25px; border-radius: 15px; width: 450px;
             border: 2px solid #cfaa56; position: relative; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        .modal-header { font-weight: bold; font-size: 1.2rem; color: #a17506; margin-bottom: 20px; }
-        .modal-footer { margin-top: 20px; display: flex; gap: 10px; }
-        .cancel-btn { background: #ccc; color: #333; }
+        .modal-header { font-weight: 900; font-size: 1.3rem; color: #a17506; margin-bottom: 20px; text-align: center; }
+        .modal-footer { margin-top: 25px; display: flex; gap: 10px; }
+        .cancel-btn { background: #e0e0e0; color: #333; }
 
         /* ========================================= */
         /* === تخصيصات الموبايل (Responsive CSS) === */
         /* ========================================= */
         @media (max-width: 768px) {
-            /* تعديل الهيكل العام */
-            #dashboard { flex-direction: column; }
+            body { height: 100%; overflow: auto; } /* السماح بتمرير الصفحة بالكامل */
+            #dashboard { display: none; flex-direction: column; height: auto; overflow: visible; }
             
-            /* القائمة الجانبية تصبح شريط علوي */
+            /* --- تحويل القائمة الجانبية لشريط علوي --- */
             .sidebar { 
+                position: sticky; /* تثبيت في الأعلى */
+                top: 0;
                 width: 100%; 
                 height: auto; 
                 flex-direction: row; 
-                overflow-x: auto; 
-                padding: 10px; 
+                overflow-x: auto; /* السماح بالتمرير الأفقي */
+                padding: 10px 15px; 
                 align-items: center;
                 background: #2d1b00;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                gap: 10px;
+                /* إخفاء شريط التمرير */
+                -ms-overflow-style: none;
+                scrollbar-width: none;
             }
+            .sidebar::-webkit-scrollbar { display: none; }
             
-            .admin-logo { 
-                display: none; /* إخفاء الشعار لتوفير المساحة */ 
-            }
+            .admin-logo { display: none; } /* إخفاء الشعار الكبير */
             
             .menu-item { 
-                margin: 0 5px; 
+                margin: 0; 
+                padding: 8px 16px;
                 font-size: 0.9rem; 
-                padding: 10px 15px;
-                white-space: nowrap;
-                border-radius: 20px;
+                border-radius: 20px; /* شكل كبسولة */
                 background: rgba(255,255,255,0.1);
+                flex-shrink: 0; /* منع الانكماش */
             }
+            .menu-item.active { background: #cfaa56; color: #2d1b00; box-shadow: 0 0 10px #cfaa56; }
             
             .logout-btn { 
                 margin-top: 0; 
-                margin-right: auto; /* دفع زر الخروج لليسار */
                 background: #d32f2f;
-                padding: 10px;
-                min-width: auto;
+                margin-right: auto; /* دفع الزر لليسار إذا كان هناك مساحة */
             }
 
-            /* المحتوى الرئيسي */
-            .main-content { padding: 15px; }
-            .section-title { font-size: 1.5rem; margin-bottom: 20px; }
+            /* --- المحتوى الرئيسي --- */
+            .main-content { padding: 15px; overflow: visible; }
+            .section-title { font-size: 1.5rem; text-align: center; margin-bottom: 20px; }
+            .add-book-btn { width: 100%; text-align: center; padding: 15px; font-size: 1.1rem; }
 
-            /* تحويل الجدول إلى بطاقات (Cards) */
+            /* --- تحويل الجدول إلى بطاقات (Cards) --- */
+            .table-container { background: transparent; box-shadow: none; overflow: visible; }
+            .data-table { display: block; width: 100%; min-width: 0; }
             .data-table thead { display: none; } /* إخفاء العناوين */
             
-            .data-table, .data-table tbody, .data-table tr, .data-table td { 
-                display: block; 
-                width: 100%; 
-            }
+            .data-table tbody { display: block; width: 100%; }
             
             .data-table tr { 
-                margin-bottom: 15px; 
+                display: block;
+                margin-bottom: 20px; 
                 background: #fff; 
-                border: 1px solid #cfaa56; 
-                border-radius: 12px; 
+                border: 1px solid #e0d0a0; 
+                border-radius: 15px; 
                 box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-                padding: 10px;
+                padding: 15px;
+                position: relative;
             }
             
             .data-table td { 
-                text-align: left; /* المحتوى لليسار */
-                padding: 10px 5px; 
-                border-bottom: 1px solid #eee; 
                 display: flex; 
                 justify-content: space-between; 
                 align-items: center;
+                text-align: left;
+                padding: 10px 0; 
+                border-bottom: 1px solid #f0f0f0; 
                 font-size: 0.95rem;
+                width: 100%;
             }
             
-            /* إضافة العنوان قبل كل خلية باستخدام data-label */
+            /* إضافة العناوين تلقائياً */
             .data-table td::before { 
                 content: attr(data-label); 
-                font-weight: bold; 
+                font-weight: 700; 
                 color: #a17506; 
-                margin-left: 10px;
-                text-align: right;
+                margin-left: 15px;
             }
             
             .data-table td:last-child { 
                 border-bottom: none; 
-                justify-content: center; 
                 padding-top: 15px;
+                justify-content: center;
+                gap: 10px;
             }
+            .data-table td:first-child { border-top: none; padding-top: 0; }
+
+            /* تكبير الأزرار في الموبايل */
+            .action-btn { flex: 1; padding: 12px; font-size: 1rem; }
 
             /* المودال */
-            .modal-content { width: 95%; padding: 20px; margin: 10px; }
-            .action-btn { width: 45%; padding: 10px; margin: 2px; }
+            .modal-content { width: 90%; margin: auto; max-height: 85vh; }
         }
 
     </style>
@@ -194,7 +207,7 @@
     <div id="login-screen">
         <div class="login-box">
             <div class="login-title">دخول المسؤولين 🔒</div>
-            <p class="error-msg" id="login-error">اسم المستخدم أو كلمة المرور غير صحيحة</p>
+            <p class="error-msg" id="login-error">خطأ في البيانات</p>
             <input type="text" id="username" class="form-input" placeholder="اسم المستخدم">
             <input type="password" id="password" class="form-input" placeholder="كلمة المرور">
             <button class="login-btn" onclick="checkLogin()">دخول</button>
@@ -204,7 +217,7 @@
     <div id="dashboard">
         
         <div class="sidebar">
-            <div class="admin-logo">نادي اقرأ Admin</div>
+            <div class="admin-logo">Admin</div>
             <div class="menu-item active" onclick="showSection('orders')">📦 الطلبات</div>
             <div class="menu-item" onclick="showSection('books')">📚 البيع</div>
             <div class="menu-item" onclick="showSection('borrow')">🤝 الاستعارة</div>
@@ -236,7 +249,7 @@
 
             <div id="books-section" class="content-section">
                 <h2 class="section-title">إدارة كتب البيع</h2>
-                <button class="add-book-btn" onclick="openAddBookModal('sale')">+ إضافة كتاب</button>
+                <button class="add-book-btn" onclick="openAddBookModal('sale')">+ إضافة كتاب جديد</button>
                 <div class="loader" id="books-loader"></div>
                 <div class="table-container">
                     <table class="data-table">
@@ -256,7 +269,7 @@
 
             <div id="borrow-section" class="content-section">
                 <h2 class="section-title">إدارة كتب الاستعارة</h2>
-                <button class="add-book-btn" onclick="openAddBookModal('borrow')">+ إضافة كتاب</button>
+                <button class="add-book-btn" onclick="openAddBookModal('borrow')">+ إضافة كتاب جديد</button>
                 <div class="loader" id="borrow-loader"></div>
                 <div class="table-container">
                     <table class="data-table">
@@ -302,18 +315,18 @@
             <input type="hidden" id="edit-row-number">
             <input type="hidden" id="current-mode"> 
             
-            <input type="text" id="book-title" class="form-input" placeholder="عنوان الكتاب / الملحق">
+            <input type="text" id="book-title" class="form-input" placeholder="عنوان الكتاب">
             
             <div id="price-container">
                 <input type="text" id="book-price" class="form-input" placeholder="السعر (مثال: 5.00 JD)">
             </div>
             
             <div id="desc-container">
-                <textarea id="book-desc" class="form-input" placeholder="وصف الكتاب (اختياري)" rows="3"></textarea>
+                <textarea id="book-desc" class="form-input" placeholder="وصف الكتاب" rows="3"></textarea>
             </div>
 
             <div id="category-container">
-                <select id="book-category" class="form-input" style="height: 45px;">
+                <select id="book-category" class="form-input" style="height: 48px; background: white;">
                     <option value="" disabled selected>اختر التصنيف</option>
                     <option value="novels">الروايات والأدب</option>
                     <option value="self-dev">التنمية البشرية</option>
@@ -330,10 +343,10 @@
             </div>
 
             <div id="phone-container" style="display:none;">
-                <input type="text" id="book-phone" class="form-input" placeholder="رقم الهاتف (07xxxxxxxx)">
+                <input type="text" id="book-phone" class="form-input" placeholder="رقم الهاتف">
             </div>
 
-            <input type="text" id="book-image" class="form-input" placeholder="رابط الصورة (URL) أو Base64">
+            <input type="text" id="book-image" class="form-input" placeholder="رابط الصورة (URL)">
             
             <div class="modal-footer">
                 <button class="login-btn" id="save-book-btn" onclick="saveBook()">حفظ</button>
@@ -381,7 +394,7 @@
             else if (sectionId === 'orders') fetchOrders();
         }
 
-        // --- جلب البيانات (مع تعديل data-label للموبايل) ---
+        // --- جلب البيانات ---
         function fetchOrders() {
             const loader = document.getElementById('orders-loader');
             const tbody = document.getElementById('orders-table-body');
@@ -392,14 +405,13 @@
             .then(data => {
                 loader.style.display = 'none';
                 if (!data || data.length <= 1) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">لا توجد طلبات حتى الآن</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">لا توجد طلبات حتى الآن</td></tr>';
                     return;
                 }
                 const rows = data.slice(1).reverse();
                 rows.forEach(row => {
                     const date = new Date(row[0]).toLocaleDateString('ar-JO');
                     const tr = document.createElement('tr');
-                    // إضافة data-label ليتعرف عليها CSS في وضع الموبايل
                     tr.innerHTML = `
                         <td data-label="التاريخ">${date}</td>
                         <td data-label="الاسم">${row[1]}</td>
@@ -427,21 +439,18 @@
                 loader.style.display = 'none';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">المكتبة فارغة</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">المكتبة فارغة</td></tr>';
                     return;
                 }
 
                 data.forEach(book => {
                     const tr = document.createElement('tr');
-                    
-                    // استخدام التشفير (Fix السابق)
                     const bookData = encodeURIComponent(JSON.stringify(book));
-                    
                     const priceCell = type === 'books' ? `<td data-label="السعر">${book.price}</td>` : '';
                     
                     tr.innerHTML = `
-                        <td data-label="الصورة"><img src="${book.image}" width="40" height="60" style="object-fit:cover; border-radius:4px;"></td>
-                        <td data-label="العنوان">${book.title}</td>
+                        <td data-label="الصورة"><img src="${book.image}" width="50" height="75" style="object-fit:cover; border-radius:6px;"></td>
+                        <td data-label="العنوان" style="font-weight:600">${book.title}</td>
                         ${priceCell}
                         <td data-label="التصنيف">${book.category}</td>
                         <td data-label="إجراءات">
@@ -465,20 +474,18 @@
             .then(response => response.json())
             .then(data => {
                 loader.style.display = 'none';
-                
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">لا توجد مشاركات</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">لا توجد مشاركات</td></tr>';
                     return;
                 }
 
                 data.forEach(item => {
                     const itemData = encodeURIComponent(JSON.stringify(item));
-                    
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td data-label="الصورة"><img src="${item.image}" width="40" height="60" style="object-fit:cover; border-radius:4px;"></td>
-                        <td data-label="العنوان">${item.title}</td>
-                        <td data-label="الوصف" style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.description}</td>
+                        <td data-label="الصورة"><img src="${item.image}" width="50" height="75" style="object-fit:cover; border-radius:6px;"></td>
+                        <td data-label="العنوان" style="font-weight:600">${item.title}</td>
+                        <td data-label="الوصف" style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.description}</td>
                         <td data-label="رقم الهاتف" style="direction:ltr;">${item.phone}</td>
                         <td data-label="إجراءات">
                             <button class="action-btn btn-edit" onclick="openEditBookModal('${itemData}', 'share')">تعديل</button>
@@ -496,13 +503,11 @@
             document.getElementById('current-mode').value = mode;
             document.getElementById('modal-title').innerText = mode === 'sale' ? "إضافة كتاب للبيع" : "إضافة كتاب للاستعارة";
             
-            // التحكم في الحقول
             document.getElementById('price-container').style.display = mode === 'sale' ? 'block' : 'none';
             document.getElementById('desc-container').style.display = mode === 'sale' ? 'block' : 'none';
             document.getElementById('category-container').style.display = 'block';
             document.getElementById('phone-container').style.display = 'none';
 
-            // تصفير الحقول
             document.getElementById('book-title').value = '';
             document.getElementById('book-price').value = '';
             document.getElementById('book-category').value = '';
@@ -515,10 +520,7 @@
 
         function openEditBookModal(bookDataStr, type) {
             isEditing = true;
-            
-            // فك التشفير
             const book = JSON.parse(decodeURIComponent(bookDataStr));
-            
             const mode = type === 'books' ? 'sale' : (type === 'borrow' ? 'borrow' : 'share');
             
             document.getElementById('current-mode').value = mode;
@@ -576,7 +578,6 @@
                 image: document.getElementById('book-image').value
             };
 
-            // إضافة الحقول الخاصة
             if(mode === 'sale') {
                 formData.price = document.getElementById('book-price').value;
                 formData.category = document.getElementById('book-category').value;
