@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم الآدمن - نادي اقرأ</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="apple-touch-icon" href="https://archive.org/services/img/20251125_20251125_0813">
-    <link rel="icon" href="https://archive.org/services/img/20251125_20251125_0813">
     <style>
         /* --- الأساسيات --- */
         * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
@@ -26,11 +24,11 @@
         .login-title { color: #a17506; font-weight: 900; margin-bottom: 20px; font-size: 1.5rem; }
         .form-input {
             width: 100%; padding: 12px; margin-bottom: 15px;
-            border: 1px solid #cfaa56; border-radius: 8px; outline: none;
+            border: 1px solid #cfaa56; border-radius: 8px; outline: none; font-size: 16px; /* حجم خط مناسب للموبايل */
         }
         .login-btn {
             width: 100%; padding: 12px; background: #a17506; color: white;
-            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px;
         }
         .login-btn:hover { background: #8a6305; }
         .error-msg { color: red; font-size: 0.8rem; display: none; margin-bottom: 10px; }
@@ -38,10 +36,11 @@
         /* --- لوحة التحكم (Dashboard) --- */
         #dashboard { display: none; height: 100%; display: flex; } 
         
-        /* القائمة الجانبية */
+        /* القائمة الجانبية (Sidebar) */
         .sidebar {
             width: 250px; background: #2d1b00; color: #fcf8ec;
             display: flex; flex-direction: column; padding: 20px;
+            flex-shrink: 0;
         }
         .admin-logo {
             font-size: 1.5rem; font-weight: 900; color: #cfaa56;
@@ -49,16 +48,16 @@
         }
         .menu-item {
             padding: 15px; cursor: pointer; border-radius: 10px; margin-bottom: 10px;
-            transition: 0.3s; font-weight: 600;
+            transition: 0.3s; font-weight: 600; white-space: nowrap;
         }
         .menu-item:hover, .menu-item.active { background: #cfaa56; color: #2d1b00; }
         .logout-btn { margin-top: auto; background: #d32f2f; color: white; text-align: center; }
 
         /* المحتوى الرئيسي */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; background-color: #fcf8ec; }
         .section-title { font-size: 2rem; color: #a17506; margin-bottom: 30px; font-weight: 900; }
         
-        /* الجداول */
+        /* الجداول (تنسيق سطح المكتب الافتراضي) */
         .table-container { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 15px; text-align: right; border-bottom: 1px solid #eee; white-space: nowrap; vertical-align: middle; }
@@ -69,7 +68,7 @@
             background: #a17506; color: white; padding: 10px 20px; 
             border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; display: inline-block;
         }
-        .action-btn { padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; margin-left: 5px; color: white; }
+        .action-btn { padding: 8px 12px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.9rem; margin-left: 5px; color: white; }
         .btn-edit { background: #2196F3; }
         .btn-delete { background: #d32f2f; }
 
@@ -90,12 +89,103 @@
             background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 3000;
         }
         .modal-content {
-            background: #fff; padding: 30px; border-radius: 15px; width: 400px;
+            background: #fff; padding: 25px; border-radius: 15px; width: 400px;
             border: 2px solid #cfaa56; position: relative; max-height: 90vh; overflow-y: auto;
         }
         .modal-header { font-weight: bold; font-size: 1.2rem; color: #a17506; margin-bottom: 20px; }
         .modal-footer { margin-top: 20px; display: flex; gap: 10px; }
         .cancel-btn { background: #ccc; color: #333; }
+
+        /* ========================================= */
+        /* === تخصيصات الموبايل (Responsive CSS) === */
+        /* ========================================= */
+        @media (max-width: 768px) {
+            /* تعديل الهيكل العام */
+            #dashboard { flex-direction: column; }
+            
+            /* القائمة الجانبية تصبح شريط علوي */
+            .sidebar { 
+                width: 100%; 
+                height: auto; 
+                flex-direction: row; 
+                overflow-x: auto; 
+                padding: 10px; 
+                align-items: center;
+                background: #2d1b00;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            
+            .admin-logo { 
+                display: none; /* إخفاء الشعار لتوفير المساحة */ 
+            }
+            
+            .menu-item { 
+                margin: 0 5px; 
+                font-size: 0.9rem; 
+                padding: 10px 15px;
+                white-space: nowrap;
+                border-radius: 20px;
+                background: rgba(255,255,255,0.1);
+            }
+            
+            .logout-btn { 
+                margin-top: 0; 
+                margin-right: auto; /* دفع زر الخروج لليسار */
+                background: #d32f2f;
+                padding: 10px;
+                min-width: auto;
+            }
+
+            /* المحتوى الرئيسي */
+            .main-content { padding: 15px; }
+            .section-title { font-size: 1.5rem; margin-bottom: 20px; }
+
+            /* تحويل الجدول إلى بطاقات (Cards) */
+            .data-table thead { display: none; } /* إخفاء العناوين */
+            
+            .data-table, .data-table tbody, .data-table tr, .data-table td { 
+                display: block; 
+                width: 100%; 
+            }
+            
+            .data-table tr { 
+                margin-bottom: 15px; 
+                background: #fff; 
+                border: 1px solid #cfaa56; 
+                border-radius: 12px; 
+                box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+                padding: 10px;
+            }
+            
+            .data-table td { 
+                text-align: left; /* المحتوى لليسار */
+                padding: 10px 5px; 
+                border-bottom: 1px solid #eee; 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center;
+                font-size: 0.95rem;
+            }
+            
+            /* إضافة العنوان قبل كل خلية باستخدام data-label */
+            .data-table td::before { 
+                content: attr(data-label); 
+                font-weight: bold; 
+                color: #a17506; 
+                margin-left: 10px;
+                text-align: right;
+            }
+            
+            .data-table td:last-child { 
+                border-bottom: none; 
+                justify-content: center; 
+                padding-top: 15px;
+            }
+
+            /* المودال */
+            .modal-content { width: 95%; padding: 20px; margin: 10px; }
+            .action-btn { width: 45%; padding: 10px; margin: 2px; }
+        }
 
     </style>
 </head>
@@ -115,11 +205,11 @@
         
         <div class="sidebar">
             <div class="admin-logo">نادي اقرأ Admin</div>
-            <div class="menu-item active" onclick="showSection('orders')">📦 إدارة الطلبات</div>
-            <div class="menu-item" onclick="showSection('books')">📚 كتب البيع</div>
-            <div class="menu-item" onclick="showSection('borrow')">🤝 كتب الاستعارة</div>
-            <div class="menu-item" onclick="showSection('share')">📢 إدارة المشاركات</div>
-            <div class="menu-item logout-btn" onclick="logout()">تسجيل خروج</div>
+            <div class="menu-item active" onclick="showSection('orders')">📦 الطلبات</div>
+            <div class="menu-item" onclick="showSection('books')">📚 البيع</div>
+            <div class="menu-item" onclick="showSection('borrow')">🤝 الاستعارة</div>
+            <div class="menu-item" onclick="showSection('share')">📢 المشاركات</div>
+            <div class="menu-item logout-btn" onclick="logout()">خروج</div>
         </div>
 
         <div class="main-content">
@@ -146,7 +236,7 @@
 
             <div id="books-section" class="content-section">
                 <h2 class="section-title">إدارة كتب البيع</h2>
-                <button class="add-book-btn" onclick="openAddBookModal('sale')">+ إضافة كتاب للبيع</button>
+                <button class="add-book-btn" onclick="openAddBookModal('sale')">+ إضافة كتاب</button>
                 <div class="loader" id="books-loader"></div>
                 <div class="table-container">
                     <table class="data-table">
@@ -166,7 +256,7 @@
 
             <div id="borrow-section" class="content-section">
                 <h2 class="section-title">إدارة كتب الاستعارة</h2>
-                <button class="add-book-btn" onclick="openAddBookModal('borrow')">+ إضافة كتاب للاستعارة</button>
+                <button class="add-book-btn" onclick="openAddBookModal('borrow')">+ إضافة كتاب</button>
                 <div class="loader" id="borrow-loader"></div>
                 <div class="table-container">
                     <table class="data-table">
@@ -253,7 +343,7 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyzvblADYZulGcKQUn4J5HVRGr7w42KLB2PD6yS-Vi_JXbEcu419P7AECzIFtoON_X7cQ/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyuYvJ2W5-C0iShnJzw-QgBWF1owqvLQWDXaU_Bavnr9Tjmqfp7oSZnyF0GpCyp6iP_2g/exec';
 
         const admins = {
             "laitharabiat": "Id6.Pure+",
@@ -291,7 +381,7 @@
             else if (sectionId === 'orders') fetchOrders();
         }
 
-        // --- جلب البيانات ---
+        // --- جلب البيانات (مع تعديل data-label للموبايل) ---
         function fetchOrders() {
             const loader = document.getElementById('orders-loader');
             const tbody = document.getElementById('orders-table-body');
@@ -309,13 +399,14 @@
                 rows.forEach(row => {
                     const date = new Date(row[0]).toLocaleDateString('ar-JO');
                     const tr = document.createElement('tr');
+                    // إضافة data-label ليتعرف عليها CSS في وضع الموبايل
                     tr.innerHTML = `
-                        <td>${date}</td>
-                        <td>${row[1]}</td>
-                        <td style="direction:ltr; text-align:right">${row[2]}</td>
-                        <td>${row[3]}</td>
-                        <td>${row[4]}</td>
-                        <td style="color:#a17506; font-weight:bold">${row[5]}</td>
+                        <td data-label="التاريخ">${date}</td>
+                        <td data-label="الاسم">${row[1]}</td>
+                        <td data-label="رقم الهاتف" style="direction:ltr; text-align:right">${row[2]}</td>
+                        <td data-label="الرقم الجامعي">${row[3]}</td>
+                        <td data-label="الكتب المطلوبة">${row[4]}</td>
+                        <td data-label="الإجمالي" style="color:#a17506; font-weight:bold">${row[5]}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -343,17 +434,17 @@
                 data.forEach(book => {
                     const tr = document.createElement('tr');
                     
-                    // استخدام التشفير لتجنب المشاكل في الزر
+                    // استخدام التشفير (Fix السابق)
                     const bookData = encodeURIComponent(JSON.stringify(book));
                     
-                    const priceCell = type === 'books' ? `<td>${book.price}</td>` : '';
+                    const priceCell = type === 'books' ? `<td data-label="السعر">${book.price}</td>` : '';
                     
                     tr.innerHTML = `
-                        <td><img src="${book.image}" width="40" height="60" style="object-fit:cover; border-radius:4px;"></td>
-                        <td>${book.title}</td>
+                        <td data-label="الصورة"><img src="${book.image}" width="40" height="60" style="object-fit:cover; border-radius:4px;"></td>
+                        <td data-label="العنوان">${book.title}</td>
                         ${priceCell}
-                        <td>${book.category}</td>
-                        <td>
+                        <td data-label="التصنيف">${book.category}</td>
+                        <td data-label="إجراءات">
                             <button class="action-btn btn-edit" onclick="openEditBookModal('${bookData}', '${type}')">تعديل</button>
                             <button class="action-btn btn-delete" onclick="deleteBook(${book.rowNumber}, '${type}')">حذف</button>
                         </td>
@@ -381,16 +472,15 @@
                 }
 
                 data.forEach(item => {
-                    // استخدام التشفير لتجنب المشاكل
                     const itemData = encodeURIComponent(JSON.stringify(item));
                     
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td><img src="${item.image}" width="40" height="60" style="object-fit:cover; border-radius:4px;"></td>
-                        <td>${item.title}</td>
-                        <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.description}</td>
-                        <td style="direction:ltr;">${item.phone}</td>
-                        <td>
+                        <td data-label="الصورة"><img src="${item.image}" width="40" height="60" style="object-fit:cover; border-radius:4px;"></td>
+                        <td data-label="العنوان">${item.title}</td>
+                        <td data-label="الوصف" style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.description}</td>
+                        <td data-label="رقم الهاتف" style="direction:ltr;">${item.phone}</td>
+                        <td data-label="إجراءات">
                             <button class="action-btn btn-edit" onclick="openEditBookModal('${itemData}', 'share')">تعديل</button>
                             <button class="action-btn btn-delete" onclick="deleteBook(${item.rowNumber}, 'share')">حذف</button>
                         </td>
@@ -426,7 +516,7 @@
         function openEditBookModal(bookDataStr, type) {
             isEditing = true;
             
-            // فك التشفير هنا
+            // فك التشفير
             const book = JSON.parse(decodeURIComponent(bookDataStr));
             
             const mode = type === 'books' ? 'sale' : (type === 'borrow' ? 'borrow' : 'share');
@@ -510,7 +600,6 @@
             .then(text => {
                 alert("تمت العملية بنجاح");
                 closeBookModal();
-                // تحديث الجدول المناسب
                 if(mode === 'share') fetchShareBooks();
                 else fetchBooks(mode === 'sale' ? 'books' : 'borrow');
             })
